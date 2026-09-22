@@ -1,4 +1,4 @@
-### vial-gui
+### vial-gui-midi
 
 # Docs and getting started
 
@@ -9,6 +9,33 @@ Vial is an open-source cross-platform (Windows, Linux and Mac) GUI and a QMK for
 
 ![](https://get.vial.today/img/vial-win-1.png)
 
+
+---
+
+## Purpose of this fork
+
+This fork adds a **MIDI tab** to the Vial keycode picker, so keyboards that expose MIDI
+functionality (via QMK's MIDI feature) can be configured without leaving Vial. The tab
+provides:
+
+- A piano-style keyboard picker for assigning MIDI note keycodes, with octave navigation
+  so you can reach every available octave.
+- The remaining MIDI controls (velocity, channel, transpose, sustain/sostenuto/legato,
+  modulation and pitch bend) laid out underneath the piano.
+- A fallback to the plain keycode grid when the window is too narrow to fit the piano.
+
+The tab is only shown for keyboards that declare MIDI support; boards without it are
+unaffected.
+
+### MIDI tab screenshots
+
+Full keycode picker window with the new MIDI tab selected:
+
+![MIDI tab](misc/midi_tab_full.png)
+
+Close-up of the piano keyboard picker and MIDI controls:
+
+![MIDI tab detail](misc/midi_tab.png)
 
 ---
 
