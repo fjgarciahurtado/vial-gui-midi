@@ -11,7 +11,9 @@ from widgets.flowlayout import FlowLayout
 from keycodes.keycodes import KEYCODES_BASIC, KEYCODES_ISO, KEYCODES_MACRO, KEYCODES_LAYERS, KEYCODES_QUANTUM, \
     KEYCODES_BOOT, KEYCODES_MODIFIERS, \
     KEYCODES_BACKLIGHT, KEYCODES_MEDIA, KEYCODES_SPECIAL, KEYCODES_SHIFTED, KEYCODES_USER, Keycode, \
-    KEYCODES_TAP_DANCE, KEYCODES_MIDI, KEYCODES_BASIC_NUMPAD, KEYCODES_BASIC_NAV, KEYCODES_ISO_KR
+    KEYCODES_TAP_DANCE, KEYCODES_MIDI, KEYCODES_BASIC_NUMPAD, KEYCODES_BASIC_NAV, KEYCODES_ISO_KR, \
+    KEYCODES_MIDI_CONTROLS_ACTIVE
+from widgets.piano_keyboard import PianoKeyboard
 from widgets.square_button import SquareButton
 from util import tr, KeycodeDisplay
 
@@ -39,7 +41,8 @@ class AlternativeDisplay(QWidget):
 
         layout = QVBoxLayout()
         if kbdef:
-            self.kb_display = DisplayKeyboard(kbdef)
+            # a string is a KLE definition, anything else is a factory returning a display widget
+            self.kb_display = DisplayKeyboard(kbdef) if isinstance(kbdef, str) else kbdef()
             self.kb_display.keycode_changed.connect(self.keycode_changed)
             layout.addWidget(self.kb_display)
             layout.setAlignment(self.kb_display, Qt.AlignHCenter)
@@ -47,6 +50,9 @@ class AlternativeDisplay(QWidget):
         self.setLayout(layout)
 
     def recreate_buttons(self, keycode_filter):
+        if self.kb_display is not None:
+            self.kb_display.recreate_keys(keycode_filter)
+
         for btn in self.buttons:
             btn.hide()
             btn.deleteLater()
@@ -75,6 +81,10 @@ class AlternativeDisplay(QWidget):
         return self.kb_display.sizeHint().width() if self.kb_display else 0
 
     def has_buttons(self):
+        # the keyboard display can carry selectable keys of its own (e.g. the MIDI piano), so a tab
+        # is only empty when neither the display nor the plain keycode buttons have anything to show
+        if self.kb_display is not None and self.kb_display.has_keys():
+            return True
         return len(self.buttons) > 0
 
 
@@ -179,7 +189,12 @@ class FilteredTabbedKeycodes(QTabWidget):
                                   (None, (KEYCODES_BOOT + KEYCODES_MODIFIERS + KEYCODES_QUANTUM))]),
             SimpleTab(self, "Backlight", KEYCODES_BACKLIGHT),
             SimpleTab(self, "App, Media and Mouse", KEYCODES_MEDIA),
-            SimpleTab(self, "MIDI", KEYCODES_MIDI),
+            Tab(self, "MIDI", [
+                # piano view with the remaining MIDI controls underneath, falling back to the
+                # plain keycode grid when the window is too narrow for the piano
+                (PianoKeyboard, KEYCODES_MIDI_CONTROLS_ACTIVE),
+                (None, KEYCODES_MIDI),
+            ]),
             SimpleTab(self, "Tap Dance", KEYCODES_TAP_DANCE),
             SimpleTab(self, "User", KEYCODES_USER),
             SimpleTab(self, "Macro", KEYCODES_MACRO),

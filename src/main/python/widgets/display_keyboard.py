@@ -41,3 +41,9 @@ class DisplayKeyboard(QWidget):
 
     def relabel_buttons(self):
         KeycodeDisplay.relabel_buttons(self.buttons)
+
+    def has_keys(self):
+        return len(self.buttons) > 0
+
+    def recreate_keys(self, keycode_filter):
+        """ The rendered layout is fixed, so there is nothing to rebuild when the filter changes """

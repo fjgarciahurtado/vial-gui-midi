@@ -637,7 +637,14 @@ KEYCODES_MACRO_BASE = [
 
 KEYCODES_MIDI = []
 
-KEYCODES_MIDI_BASIC = [
+# Subsets of KEYCODES_MIDI kept in sync by create_midi_keycodes(). The MIDI tab renders the notes on
+# a piano widget and every remaining control as a regular button, so it needs the two groups apart.
+# These must be mutated in place: the keycode tabs capture the list objects by reference.
+KEYCODES_MIDI_NOTES_ACTIVE = []
+
+KEYCODES_MIDI_CONTROLS_ACTIVE = []
+
+KEYCODES_MIDI_NOTES = [
     K("MI_C", "ᴹᴵᴰᴵ\nC", "Midi send note C"),
     K("MI_Cs", "ᴹᴵᴰᴵ\nC#/Dᵇ", "Midi send note C#/Dᵇ", alias=["MI_Db"]),
     K("MI_D", "ᴹᴵᴰᴵ\nD", "Midi send note D"),
@@ -715,9 +722,14 @@ KEYCODES_MIDI_BASIC = [
     K("MI_A_5", "ᴹᴵᴰᴵ\nA₅", "Midi send note A₅"),
     K("MI_As_5", "ᴹᴵᴰᴵ\nA#₅/Bᵇ₅", "Midi send note A#₅/Bᵇ₅", alias=["MI_Bb_5"]),
     K("MI_B_5", "ᴹᴵᴰᴵ\nB₅", "Midi send note B₅"),
+]
 
+# available whenever MIDI is enabled, but not a note so it is not drawn on the piano
+KEYCODES_MIDI_BASIC_CONTROLS = [
     K("MI_ALLOFF", "ᴹᴵᴰᴵ\nNotesᵒᶠᶠ", "Midi send all notes OFF"),
 ]
+
+KEYCODES_MIDI_BASIC = KEYCODES_MIDI_NOTES + KEYCODES_MIDI_BASIC_CONTROLS
 
 KEYCODES_MIDI_ADVANCED = [
     K("MI_OCT_N2", "ᴹᴵᴰᴵ\nOct₋₂", "Midi set octave to -2"),
@@ -845,12 +857,17 @@ def create_custom_user_keycodes(custom_keycodes):
 
 def create_midi_keycodes(midiSettingLevel):
     KEYCODES_MIDI.clear()
+    KEYCODES_MIDI_NOTES_ACTIVE.clear()
+    KEYCODES_MIDI_CONTROLS_ACTIVE.clear()
 
     if midiSettingLevel == "basic" or midiSettingLevel == "advanced":
         KEYCODES_MIDI.extend(KEYCODES_MIDI_BASIC)
+        KEYCODES_MIDI_NOTES_ACTIVE.extend(KEYCODES_MIDI_NOTES)
+        KEYCODES_MIDI_CONTROLS_ACTIVE.extend(KEYCODES_MIDI_BASIC_CONTROLS)
 
     if midiSettingLevel == "advanced":
         KEYCODES_MIDI.extend(KEYCODES_MIDI_ADVANCED)
+        KEYCODES_MIDI_CONTROLS_ACTIVE.extend(KEYCODES_MIDI_ADVANCED)
 
 
 def recreate_keyboard_keycodes(keyboard):
